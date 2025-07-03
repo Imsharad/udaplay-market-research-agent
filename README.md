@@ -2,6 +2,44 @@
 
 This project is a sophisticated AI-powered market research agent designed to provide insightful and accurate information about the video game industry. It leverages a Retrieval-Augmented Generation (RAG) pipeline, a stateful agent, and a web search fallback to deliver comprehensive and well-cited answers to user queries.
 
+## Project Architecture & Logic
+
+### Data Ingestion Pipeline
+
+This diagram shows how raw game data is processed and indexed into a searchable vector database.
+
+![Data Pipeline](public/images/data_pipeline.png)
+
+### State Machine Logic
+
+This diagram explains why a state machine is a suitable architecture for managing the agent's cyclical thought process.
+
+![State Machine Logic](public/images/state_machine.png)
+
+### Agent Logic & Workflow
+
+The core agent logic follows a RAG (Retrieval-Augmented Generation) -> Evaluate -> Web Search workflow. This multi-phase process ensures that the agent provides the most accurate and comprehensive answers by first consulting its internal knowledge, evaluating the quality of that information, and only then resorting to external web searches if necessary.
+
+#### Phase I: Internal Database Retrieval
+
+The agent first attempts to answer the user's query using its internal vector database. This phase focuses on efficient retrieval of relevant information through semantic search.
+
+![Phase 1: Retrieval](public/images/phase1.png)
+
+#### Phase II: Self-Evaluation of Results
+
+In this critical phase, the agent uses an LLM to act as a "judge" to evaluate the quality of the information retrieved from the internal database.
+
+![Phase 2: Evaluation](public/images/phase2.png)
+
+#### Phase III: Answer Synthesis & Web Augmentation
+
+Based on the evaluation, the agent either synthesizes a final answer from the internal data or performs a web search to augment its knowledge before providing a response.
+
+![Phase 3: Synthesis & Augmentation](public/images/phase3.png)
+
+---
+
 ## Features
 
 -   **Retrieval-Augmented Generation (RAG):** The agent uses a local vector database (ChromaDB) to provide fast and accurate information about a wide range of video games.
@@ -64,46 +102,9 @@ This project is a sophisticated AI-powered market research agent designed to pro
                 └── ...
 ```
 
-## Workflow
 
-### Offline RAG: Data Ingestion
 
-```mermaid
-graph TD
-    A[Start] --> B{Read Game Data};
-    B --> C[For each JSON file];
-    C --> D{Extract Game Info<br/>(Name, Platform, Genre, etc.)};
-    D --> E[Construct Document String];
-    E --> F{Connect to ChromaDB};
-    F --> G[Get 'udaplay' Collection];
-    G --> H{Embed Document<br/>using OpenAI};
-    H --> I[Add Document to Collection];
-    C --> J(Done Reading Files);
-    I --> C;
-    J --> K[End];
-```
 
-### Online Agent: Query Processing
-
-```mermaid
-graph TD
-    A[User asks a question] --> B{Agent};
-    B --> C{Use 'retrieve_game' tool};
-    C --> D[Search ChromaDB];
-    D --> E{Get retrieved documents};
-    E --> F{Use 'evaluate_retrieval' tool};
-    F --> G{LLM evaluates documents};
-    G --> H{Are documents useful?};
-    H -- Yes --> I[Synthesize answer from documents];
-    H -- No --> J{Use 'game_web_search' tool};
-    J --> K[Search web with Tavily];
-    K --> L{Get web search results};
-    L --> M[Synthesize answer from web results];
-    I --> N{Return structured output};
-    M --> N;
-    N --> O[Maintain conversation state];
-    O --> P(End);
-```
 
 ## License
 
